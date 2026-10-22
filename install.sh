@@ -1,7 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Support running both from a local clone and via `curl -fsSL ... | bash`
+if [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "$(dirname "${BASH_SOURCE[0]}")/history.toml" ]; then
+    REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+else
+    REPO_DIR="$HOME/cliamp-playlists"
+    if [ -d "$REPO_DIR/.git" ]; then
+        echo "==> Updating existing $REPO_DIR..."
+        git -C "$REPO_DIR" pull --ff-only
+    else
+        echo "==> Cloning sgt-nylle/cliamp-playlists to $REPO_DIR..."
+        git clone https://github.com/sgt-nylle/cliamp-playlists.git "$REPO_DIR"
+    fi
+fi
 
 echo "==> Checking OS and audio dependencies..."
 if grep -qi microsoft /proc/version 2>/dev/null; then
@@ -9,7 +21,7 @@ if grep -qi microsoft /proc/version 2>/dev/null; then
     if command -v apt-get >/dev/null 2>&1; then
         echo "==> Installing WSL2 ALSA->PulseAudio bridge and media dependencies..."
         sudo apt-get update
-        sudo apt-get install -y curl libasound2-plugins pulseaudio-utils ffmpeg yt-dlp
+        sudo apt-get install -y curl git libasound2-plugins pulseaudio-utils ffmpeg yt-dlp
     fi
 
     echo "==> Configuring ~/.asoundrc for WSLg PulseAudio routing..."
@@ -26,11 +38,13 @@ EOF
 elif command -v apt-get >/dev/null 2>&1; then
     echo "==> Detected Debian/Ubuntu Linux."
     sudo apt-get update
-    sudo apt-get install -y curl libasound2-plugins ffmpeg yt-dlp
+    sudo apt-get install -y curl git libasound2-plugins ffmpeg yt-dlp
 elif command -v pacman >/dev/null 2>&1; then
     echo "==> Detected Arch Linux."
     sudo pacman -S --needed --noconfirm alsa-lib pipewire-alsa ffmpeg yt-dlp
 fi
+
+export PATH="$HOME/.local/bin:$PATH"
 
 if ! command -v cliamp >/dev/null 2>&1; then
     echo "==> Installing cliamp..."
@@ -38,8 +52,6 @@ if ! command -v cliamp >/dev/null 2>&1; then
 else
     echo "==> cliamp is already installed ($(cliamp --version))."
 fi
-
-export PATH="$HOME/.local/bin:$PATH"
 
 echo "==> Restoring history.toml and importing M3U playlists into cliamp..."
 mkdir -p "$HOME/.config/cliamp"

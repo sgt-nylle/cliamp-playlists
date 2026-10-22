@@ -6,20 +6,19 @@ Personal M3U playlists and setup instructions for [cliamp](https://github.com/bj
 
 ## Quick Start (Automated Setup)
 
-Clone this repository on any remote system (or WSL2 Ubuntu) using standard `git` and run `./install.sh` to install `cliamp`, configure audio (including WSLg PulseAudio routing), and import all `.m3u` playlists:
+Run this one-liner on any remote Linux system or Windows WSL2 (Ubuntu) to install `cliamp`, configure audio (including WSLg PulseAudio routing), clone the playlists, and import all `.m3u` files:
 
 ```bash
-# Via HTTPS
+curl -fsSL https://raw.githubusercontent.com/sgt-nylle/cliamp-playlists/main/install.sh | bash
+```
+
+Or clone manually with `git` (no authentication required):
+
+```bash
 git clone https://github.com/sgt-nylle/cliamp-playlists.git ~/cliamp-playlists
-
-# Or via SSH
-git clone git@github.com:sgt-nylle/cliamp-playlists.git ~/cliamp-playlists
-
 cd ~/cliamp-playlists
 ./install.sh
 ```
-
-*(If you use GitHub CLI: `gh repo clone sgt-nylle/cliamp-playlists ~/cliamp-playlists`)*
 
 ---
 
